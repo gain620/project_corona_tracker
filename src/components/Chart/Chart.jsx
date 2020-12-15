@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
 
-import { fetchDailyData } from '../../api';
+import { fetchDailyDataTest } from '../../api';
 
 import styles from './Chart.module.css';
 
-const Chart = ({ data: { confirmed, recovered, deaths }, country }) => {
+//sw
+const Chart = ({ newData, country }) => {
   const [dailyData, setDailyData] = useState({});
+  const [switchButton, setSwitchButton] = useState(false);
 
   useEffect(() => {
     const fetchMyAPI = async () => {
-      const initialDailyData = await fetchDailyData();
+      const initialDailyData = await fetchDailyDataTest("ShinMegamiTensei3");
 
       setDailyData(initialDailyData);
     };
@@ -18,49 +20,34 @@ const Chart = ({ data: { confirmed, recovered, deaths }, country }) => {
     fetchMyAPI();
   }, []);
 
-  const barChart = (
-    confirmed ? (
-      <Bar
-        data={{
-          labels: ['Infected', 'Recovered', 'Deaths'],
-          datasets: [
-            {
-              label: 'People',
-              backgroundColor: ['rgba(0, 0, 255, 0.5)', 'rgba(0, 255, 0, 0.5)', 'rgba(255, 0, 0, 0.5)'],
-              data: [confirmed.value, recovered.value, deaths.value],
-            },
-          ],
-        }}
-        options={{
-          legend: { display: false },
-          title: { display: true, text: `Current state in ${country}` },
-        }}
-      />
-    ) : null
-  );
+  // const updateChart = (
+  //   newData[0] ? (
+
+  //   ): null
+  // );
 
   const lineChart = (
     dailyData[0] ? (
       <Line
         data={{
-          labels: dailyData.map(({ date }) => new Date(date).toLocaleDateString()),
+          labels: dailyData.map(({ timeStamp }) => new Date(timeStamp).toLocaleDateString()),
           datasets: [{
-            data: dailyData.map((data) => data.confirmed),
-            label: 'Infected',
+            data: dailyData.map((data) => data.realValue),
+            label: 'Tester',
             borderColor: '#3333ff',
             fill: true,
           }, {
-            data: dailyData.map((data) => data.deaths),
+            data: dailyData.map((data) => data.fcstValue),
             label: 'Deaths',
             borderColor: 'red',
             backgroundColor: 'rgba(255, 0, 0, 0.5)',
             fill: true,
-          },  {
-            data: dailyData.map((data) => data.recovered),
+          }, {
+            data: dailyData.map((data) => data.threshhold),
             label: 'Recovered',
             borderColor: 'green',
-            backgroundColor: 'rgba(0, 255, 0, 0.5)',
-            fill: true,
+            // backgroundColor: 'rgba(0, 255, 0, 0.5)',
+            // fill: true,
           },
           ],
         }}
@@ -70,7 +57,36 @@ const Chart = ({ data: { confirmed, recovered, deaths }, country }) => {
 
   return (
     <div className={styles.container}>
-      {country ? barChart : lineChart}
+      {newData[0] ? <Line
+        data={{
+          labels: newData.map(({ timeStamp }) => new Date(timeStamp).toLocaleDateString()),
+          datasets: [{
+            data: newData.map((data) => data.realValue),
+            label: 'Tester',
+            borderColor: '#3333ff',
+            fill: true,
+            pointRadius: 1,
+            pointHoverRadius: 1
+          }, {
+            data: newData.map((data) => data.fcstValue),
+            label: 'Deaths',
+            borderColor: 'red',
+            backgroundColor: 'rgba(255, 0, 0, 0.5)',
+            fill: true,
+            pointRadius: 1,
+            pointHoverRadius: 1
+          }, {
+            data: newData.map((data) => data.threshhold),
+            label: 'Recovered',
+            borderColor: 'green',
+            // backgroundColor: 'rgba(0, 255, 0, 0.5)',
+            // fill: true,
+            pointRadius: 1,
+            pointHoverRadius: 1
+          },
+          ],
+        }}
+      /> : lineChart}
     </div>
   );
 };
